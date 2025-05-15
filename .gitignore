@@ -48,6 +48,39 @@ docs/_build/*
 cover/*
 MANIFEST
 
+# Jenkins
+.jenkins/
+workspace/
+builds/
+last*/
+*/builds/*
+*/workspace/*
+*/last*/
+*/configurations/*/builds/*
+*/configurations/*/workspace/*
+*/configurations/*/last*/
+*/jobs/*/builds/*
+*/jobs/*/workspace/*
+*/jobs/*/last*/
+*/modules/*/builds/*
+*/modules/*/workspace/*
+*/modules/*/last*/
+*/jobs/*/modules/*/builds/*
+*/jobs/*/modules/*/workspace/*
+*/jobs/*/modules/*/last*/
+*/jobs/*/jobs/*/builds/*
+*/jobs/*/jobs/*/workspace/*
+*/jobs/*/jobs/*/last*/
+*/jobs/*/jobs/*/modules/*/builds/*
+*/jobs/*/jobs/*/modules/*/workspace/*
+*/jobs/*/jobs/*/modules/*/last*/
+*/jobs/*/jobs/*/jobs/*/builds/*
+*/jobs/*/jobs/*/jobs/*/workspace/*
+*/jobs/*/jobs/*/jobs/*/last*/
+*/jobs/*/jobs/*/jobs/*/modules/*/builds/*
+*/jobs/*/jobs/*/jobs/*/modules/*/workspace/*
+*/jobs/*/jobs/*/jobs/*/modules/*/last*/
+
 # Per-project virtualenvs
 .venv*/
 .conda*/

@@ -1,16 +1,25 @@
-import sys
+"""Agente de prueba 1: Implementación de una red neuronal simple."""
 
-if sys.version_info[:2] >= (3, 8):
-    # TODO: Import directly (no need for conditional) when `python_requires = >= 3.8`
-    from importlib.metadata import PackageNotFoundError, version  # pragma: no cover
-else:
-    from importlib_metadata import PackageNotFoundError, version  # pragma: no cover
+from .model import SimpleNN, evaluate_model, train_model
+from .utils import (
+    get_classification_report,
+    plot_confusion_matrix,
+    plot_training_history,
+)
 
+__all__ = [
+    "SimpleNN",
+    "train_model",
+    "evaluate_model",
+    "plot_confusion_matrix",
+    "plot_training_history",
+    "get_classification_report",
+]
+
+# Versión del paquete
 try:
-    # Change here if project is renamed and does not equal the package name
-    dist_name = __name__
-    __version__ = version(dist_name)
-except PackageNotFoundError:  # pragma: no cover
-    __version__ = "unknown"
-finally:
-    del version, PackageNotFoundError
+    from importlib.metadata import PackageNotFoundError, version
+
+    __version__ = version("agente_prueba1")
+except (ImportError, PackageNotFoundError):
+    __version__ = "0.1.0"
