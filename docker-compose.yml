@@ -10,7 +10,7 @@ services:
     working_dir: /app
     environment:
       - PYTHONPATH=/app
-    command: bash -c "pip install -e . && bash"
+    command: bash -c "pip install . && bash"
     tty: true
     stdin_open: true
 
@@ -23,7 +23,11 @@ services:
     working_dir: /app
     environment:
       - PYTHONPATH=/app
-    command: bash -c "pip install -e . && pytest -v"
+    command: >
+      bash -c "
+        pip install -e . &&
+        pytest -v
+      "
     depends_on:
       - app
 
@@ -38,7 +42,6 @@ services:
       - PYTHONPATH=/app
     command: >
       bash -c "
-        pip install -e . &&
         black --check . &&
         flake8 . &&
         mypy . &&

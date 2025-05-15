@@ -141,15 +141,10 @@ class SimpleNN(nn.Module):
         Returns:
             Tensor de salida con forma (batch_size, output_size).
         """
-        for i, layer in enumerate(self.layers):
+        for layer in self.layers:
             x = layer(x)
-            # No aplicar activación a la salida
-            if i < len(self.layers) - 1:
-                x = self.activation(x)
-                if self.dropout_rate > 0:
-                    x = torch.nn.functional.dropout(
-                        x, p=self.dropout_rate, training=self.training
-                    )
+        # Aplicar la capa de salida
+        x = self.output_layer(x)
         return x
 
     def get_config(self) -> Dict[str, Any]:
@@ -171,9 +166,18 @@ class SimpleNN(nn.Module):
         return cls(**config)
 
     def get_optimizer(
-        self, optimizer_class: type = optim.Adam, **optim_kwargs
+        self, optimizer_class: type = optim.AdamW, **optim_kwargs
     ) -> optim.Optimizer:
-        """Obtiene un optimizador configurado para este modelo."""
+        """
+        Obtiene un optimizador configurado para este modelo.
+
+        Args:
+            optimizer_class: Clase del optimizador a utilizar (por defecto: AdamW).
+            **optim_kwargs: Argumentos adicionales para el optimizador.
+
+        Returns:
+            Optimizador configurado con los parámetros del modelo.
+        """
         return optimizer_class(
             self.parameters(), weight_decay=self.weight_decay, **optim_kwargs
         )
@@ -181,10 +185,29 @@ class SimpleNN(nn.Module):
     def get_lr_scheduler(
         self,
         optimizer: optim.Optimizer,
-        scheduler_class: type = _LRScheduler,
+        scheduler_class: type = optim.lr_scheduler.StepLR,
         **scheduler_kwargs,
     ) -> _LRScheduler:
-        """Obtiene un programador de tasa de aprendizaje."""
+        """
+        Obtiene un programador de tasa de aprendizaje.
+
+        Args:
+            optimizer: Optimizador para el cual configurar el scheduler.
+            scheduler_class: Clase del scheduler a utilizar (por defecto: StepLR).
+            **scheduler_kwargs: Argumentos adicionales para el scheduler.
+
+        Returns:
+            Scheduler configurado para el optimizador.
+        """
+        # Configuración por defecto para StepLR
+        if (
+            scheduler_class == optim.lr_scheduler.StepLR
+            and "step_size" not in scheduler_kwargs
+        ):
+            scheduler_kwargs["step_size"] = 5
+        if "gamma" not in scheduler_kwargs:
+            scheduler_kwargs["gamma"] = 0.1
+
         return scheduler_class(optimizer, **scheduler_kwargs)
 
 
