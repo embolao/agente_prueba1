@@ -2,26 +2,45 @@ pipeline {
     agent {
         docker {
             image 'python:3.12-slim'
+            args '--user root'
         }
     }
 
     stages {
-        stage('Checkout') {
+        stage('Preparar Entorno') {
             steps {
-                checkout scm
+                script {
+                    echo 'Verificando estructura del proyecto...'
+                    sh 'ls -la'
+                    echo 'Verificando directorio de tests...'
+                    sh 'ls -la tests/'
+                    
+                    echo 'Instalando dependencias...'
+                    sh '''
+                        pip install -r requirements.txt
+                        pip install pytest pytest-junitxml
+                    '''
+                }
             }
         }
 
         stage('Ejecutar Tests') {
             steps {
-                sh 'apt-get update && apt-get install -y gcc' // si lo necesitas
-                sh 'pip install -r requirements.txt'
-                sh 'mkdir -p test-reports'
-                sh 'pytest -v --junitxml=test-reports/results.xml'
+                script {
+                    echo 'Creando directorio para reportes...'
+                    sh 'mkdir -p test-reports'
+                    
+                    echo 'Ejecutando tests...'
+                    sh '''
+                        pytest --junitxml=test-reports/results.xml -v
+                    '''
+                }
             }
             post {
                 always {
-                    junit 'test-reports/*.xml'
+                    echo 'Verificando reporte de tests...'
+                    sh 'ls -la test-reports/'
+                    junit 'test-reports/results.xml'
                 }
             }
         }
@@ -35,7 +54,9 @@ pipeline {
             echo '¡Los tests se completaron con éxito!'
         }
         failure {
-            echo 'Los tests fallaron. Por favor, revisa los logs.'
+            echo 'Los tests fallaron. Revisando logs detallados...'
+            sh 'cat test-reports/results.xml'
         }
     }
 }
+ 
