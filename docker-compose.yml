@@ -11,6 +11,7 @@ services:
     environment:
       - PYTHONPATH=/app
     command: bash -c "pip install . && bash"
+
     tty: true
     stdin_open: true
 

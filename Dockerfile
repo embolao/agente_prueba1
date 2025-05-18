@@ -1,7 +1,7 @@
 # syntax=docker/dockerfile:1.4
 
 # Use the official Python image as a parent image
-FROM python:3.12-slim as base
+FROM pytorch/pytorch:2.7.0-cuda12.1-cudnn8-runtime as base
 
 # Set environment variables
 ENV PYTHONDONTWRITEBYTECODE=1 \

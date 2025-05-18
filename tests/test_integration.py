@@ -12,7 +12,7 @@ def test_full_training_workflow():
     """Prueba el flujo completo de carga de datos, entrenamiento y evaluación."""
     from agente_prueba1 import SimpleNN, evaluate_model, train_model
 
-    # Crear datos de ejemplo y moverlos a CUDA
+    # Crear datos de ejemplo en CUDA
     device = torch.device("cuda")
     x_train = torch.randn(100, 784, device=device)  # 100 muestras, 784 características
     y_train = torch.randint(0, 10, (100,), device=device)  # 100 etiquetas (10 clases)
@@ -35,7 +35,7 @@ def test_full_training_workflow():
         batch_norm=True,
         weight_decay=1e-4,
         use_bias=True,
-    ).to("cpu")
+    ).to(device)
 
     # Función de pérdida
     criterion = nn.CrossEntropyLoss()
@@ -56,6 +56,7 @@ def test_full_training_workflow():
         scheduler=scheduler,
         num_epochs=2,  # Solo 2 épocas para pruebas rápidas
         verbose=0,
+        device=device,
     )
 
     # Verificar que el historial contiene las claves esperadas
