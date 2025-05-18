@@ -82,6 +82,28 @@ last*/
 */jobs/*/jobs/*/jobs/*/modules/*/last*/
 
 # Per-project virtualenvs
-.venv*/
-.conda*/
+.venv/
+.conda/
 .python-version
+
+# Modelos y checkpoints
+models/*.pth
+models/model_config.json
+models/checkpoints/
+
+# Logs y resultados de entrenamiento
+logs/
+runs/
+
+# Checkpoints de entrenamiento
+tensorboard/
+checkpoints/
+
+# Figuras generadas
+figures/
+
+# Archivos temporales de PyTorch
+*.pt
+*.pth
+*.ptl
+*.ptm

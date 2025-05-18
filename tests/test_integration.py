@@ -12,11 +12,12 @@ def test_full_training_workflow():
     """Prueba el flujo completo de carga de datos, entrenamiento y evaluación."""
     from agente_prueba1 import SimpleNN, evaluate_model, train_model
 
-    # Crear datos de ejemplo
-    x_train = torch.randn(100, 784)  # 100 muestras, 784 características
-    y_train = torch.randint(0, 10, (100,))  # 100 etiquetas (10 clases)
-    x_val = torch.randn(20, 784)  # 20 muestras de validación
-    y_val = torch.randint(0, 10, (20,))  # 20 etiquetas de validación
+    # Crear datos de ejemplo y moverlos a CUDA
+    device = torch.device('cuda')
+    x_train = torch.randn(100, 784, device=device)  # 100 muestras, 784 características
+    y_train = torch.randint(0, 10, (100,), device=device)  # 100 etiquetas (10 clases)
+    x_val = torch.randn(20, 784, device=device)  # 20 muestras de validación
+    y_val = torch.randint(0, 10, (20,), device=device)  # 20 etiquetas de validación
 
     # Crear datasets y dataloaders
     train_dataset = TensorDataset(x_train, y_train)
@@ -24,7 +25,7 @@ def test_full_training_workflow():
     train_loader = DataLoader(train_dataset, batch_size=10, shuffle=True)
     val_loader = DataLoader(val_dataset, batch_size=10, shuffle=False)
 
-    # Crear modelo
+    # Crear modelo y forzar uso de CPU
     model = SimpleNN(
         input_size=784,
         hidden_sizes=[64, 32],
@@ -34,7 +35,7 @@ def test_full_training_workflow():
         batch_norm=True,
         weight_decay=1e-4,
         use_bias=True,
-    )
+    ).to('cpu')
 
     # Función de pérdida
     criterion = nn.CrossEntropyLoss()

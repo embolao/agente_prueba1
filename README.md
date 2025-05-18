@@ -1,6 +1,163 @@
 # Agente Prueba 1
 
-Un proyecto Python con configuración profesional para desarrollo de alta calidad.
+Proyecto de clasificación de imágenes MNIST usando redes neuronales con PyTorch.
+
+## 🚀 Características
+
+- 🎨 Interfaz de línea de comandos para entrenamiento y predicción
+- 🔧 Configuración flexible de hiperparámetros
+- 📊 Visualización de métricas de entrenamiento
+- 📈 Soporte para GPU/CUDA
+- 🧪 Pruebas unitarias completas
+- 🛠️ Integración con pre-commit hooks
+- 📦 Configuración de Docker para desarrollo y producción
+- 🤖 GitHub Actions para CI/CD
+- 📚 Documentación completa
+
+## 📋 Requisitos
+
+- Python 3.8+
+- PyTorch 2.7.0+
+- CUDA (opcional, para aceleración GPU)
+- Docker y Docker Compose (opcional, para desarrollo con contenedores)
+- Git
+
+## 🛠️ Instalación
+
+1. **Clonar el repositorio**:
+   ```bash
+git clone https://github.com/embolao/agente_prueba1.git
+cd agente_prueba1
+```
+
+2. **Configurar entorno virtual**:
+   ```bash
+python -m venv venv
+source venv/bin/activate  # En Windows: venv\Scripts\activate
+```
+
+3. **Instalar dependencias**:
+   ```bash
+pip install -e .
+```
+
+4. **Instalar pre-commit hooks**:
+   ```bash
+pre-commit install
+```
+
+## 📊 Uso de la aplicación
+
+La aplicación ofrece tres modos principales de uso:
+
+### 1. Entrenamiento de un nuevo modelo
+
+```bash
+python app.py train [opciones]
+```
+
+Opciones disponibles:
+- `--epochs`: Número de épocas de entrenamiento (default: 10)
+- `--batch-size`: Tamaño del batch (default: 64)
+- `--learning-rate`: Tasa de aprendizaje (default: 0.001)
+- `--device`: Dispositivo para el entrenamiento (cpu o cuda) (default: cuda si disponible)
+- `--hidden-sizes`: Tamaños de las capas ocultas (default: [256, 128, 64])
+- `--dropout`: Probabilidad de dropout (default: 0.2)
+- `--activation`: Función de activación (relu, sigmoid, tanh) (default: relu)
+
+Ejemplo de uso:
+```bash
+python app.py train --epochs 10 --batch-size 128 --learning-rate 0.0001
+```
+
+### 2. Evaluación de un modelo
+
+```bash
+python app.py evaluate [opciones]
+```
+
+Opciones disponibles:
+- `--device`: Dispositivo para la evaluación (cpu o cuda)
+- `--model-path`: Ruta del modelo a cargar
+- `--config-path`: Ruta de la configuración del modelo
+- `--batch-size`: Tamaño del batch
+
+Ejemplo de uso:
+```bash
+python app.py evaluate --model-path models/mnist_model.pth
+```
+
+### 3. Predicción con un modelo
+
+```bash
+python app.py predict [opciones]
+```
+
+Opciones disponibles:
+- `--device`: Dispositivo para la predicción (cpu o cuda)
+- `--model-path`: Ruta del modelo a cargar
+- `--config-path`: Ruta de la configuración del modelo
+
+Ejemplo de uso:
+```bash
+python app.py predict --model-path models/mnist_model.pth
+```
+
+## 🧪 Ejecución de pruebas
+
+```bash
+pytest
+```
+
+Para ver el informe de cobertura:
+```bash
+pytest --cov=src --cov-report=term-missing
+```
+
+## 🧹 Formateo y Linting
+
+- **Formatear código**:
+  ```bash
+  black .
+  ```
+
+- **Verificar estilo de código**:
+  ```bash
+  flake8 .
+  ```
+
+- **Verificar tipos**:
+  ```bash
+  mypy .
+  ```
+
+## 📊 Métricas del modelo
+
+El modelo utiliza las siguientes métricas:
+
+- **Pérdida**: CrossEntropyLoss
+- **Precisión**: Accuracy
+- **Tasa de aprendizaje**: AdamW
+- **Regularización**: 
+  - Weight decay: 1e-4
+  - Dropout: Configurable
+  - Batch Normalization: Enabled
+## 🤝 Contribución
+1. Haz un fork del proyecto
+2. Crea una rama para tu característica (`git checkout -b feature/AmazingFeature`)
+3. Haz commit de tus cambios (`git commit -m 'Add some AmazingFeature'`)
+4. Haz push a la rama (`git push origin feature/AmazingFeature`)
+5. Abre un Pull Request
+
+## 📄 Licencia
+
+Distribuido bajo la licencia MIT. Ver `LICENSE` para más información.
+
+## 📚 Documentación adicional
+
+- [PyTorch Documentation](https://pytorch.org/docs/stable/index.html)
+- [MNIST Dataset](http://yann.lecun.com/exdb/mnist/)
+- [TensorBoard Documentation](https://www.tensorflow.org/tensorboard)
 
 ## 🚀 Características
 
@@ -154,4 +311,5 @@ Configura las siguientes variables de entorno en Jenkins para un mejor rendimien
 ## ✉️ Contacto
 Embolao
 
-Enlace del proyecto: [https://github.com/tu-usuario/agente_prueba1](https://github.com/tu-usuario/agente_prueba1)
+Enlace del proyecto: [https://github.com/embolao/agente_prueba1](https://github.com/embolao/agente_prueba1)
+

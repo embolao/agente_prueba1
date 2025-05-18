@@ -558,7 +558,7 @@ def main():
     }
 
     # Crear modelo
-    from src.agente_prueba1.model import SimpleNN
+    from agente_prueba1.model import SimpleNN
 
     model = SimpleNN(**config)
     model = model.to(device)
