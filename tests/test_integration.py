@@ -13,7 +13,7 @@ def test_full_training_workflow():
     from agente_prueba1 import SimpleNN, evaluate_model, train_model
 
     # Crear datos de ejemplo en CUDA
-    device = torch.device("cuda")
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     x_train = torch.randn(100, 784, device=device)  # 100 muestras, 784 características
     y_train = torch.randint(0, 10, (100,), device=device)  # 100 etiquetas (10 clases)
     x_val = torch.randn(20, 784, device=device)  # 20 muestras de validación
