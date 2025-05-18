@@ -309,6 +309,6 @@ Configura las siguientes variables de entorno en Jenkins para un mejor rendimien
 - `PIP_DISABLE_PIP_VERSION_CHECK=on`: Para acelerar la instalación de paquetes
 
 ## ✉️ Contacto
-Embolao
+Embolao.
 
 Enlace del proyecto: [https://github.com/embolao/agente_prueba1](https://github.com/embolao/agente_prueba1)
