@@ -13,7 +13,7 @@ def test_full_training_workflow():
     from agente_prueba1 import SimpleNN, evaluate_model, train_model
 
     # Crear datos de ejemplo y moverlos a CUDA
-    device = torch.device('cuda')
+    device = torch.device("cuda")
     x_train = torch.randn(100, 784, device=device)  # 100 muestras, 784 características
     y_train = torch.randint(0, 10, (100,), device=device)  # 100 etiquetas (10 clases)
     x_val = torch.randn(20, 784, device=device)  # 20 muestras de validación
@@ -35,7 +35,7 @@ def test_full_training_workflow():
         batch_norm=True,
         weight_decay=1e-4,
         use_bias=True,
-    ).to('cpu')
+    ).to("cpu")
 
     # Función de pérdida
     criterion = nn.CrossEntropyLoss()

@@ -1,7 +1,7 @@
 pipeline {
     agent {
         docker {
-            image 'python:3.8-slim'
+            image 'python:3.12-slim'
             args '--user root'
         }
     }
@@ -16,8 +16,8 @@ pipeline {
         stage('Preparar entorno') {
             steps {
                 sh 'python --version'
-                sh 'pip install --upgrade pip'
-                sh 'pip install -e .[dev]'
+                sh 'python -m pip install --upgrade pip'
+                sh 'python -m pip install -e .[dev]'
             }
         }
 

@@ -138,7 +138,7 @@ El modelo utiliza las siguientes métricas:
 - **Pérdida**: CrossEntropyLoss
 - **Precisión**: Accuracy
 - **Tasa de aprendizaje**: AdamW
-- **Regularización**: 
+- **Regularización**:
   - Weight decay: 1e-4
   - Dropout: Configurable
   - Batch Normalization: Enabled
@@ -312,4 +312,3 @@ Configura las siguientes variables de entorno en Jenkins para un mejor rendimien
 Embolao
 
 Enlace del proyecto: [https://github.com/embolao/agente_prueba1](https://github.com/embolao/agente_prueba1)
-

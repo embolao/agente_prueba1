@@ -6,6 +6,7 @@ from typing import Dict, List, Optional, Tuple
 import matplotlib.pyplot as plt
 import numpy as np
 import seaborn as sns
+import torch
 from sklearn.metrics import classification_report, confusion_matrix
 
 # Configurar estilo de las gráficas
@@ -193,3 +194,235 @@ def get_classification_report(
     return classification_report(
         y_true, y_pred, target_names=target_names, digits=digits, output_dict=False
     )
+
+
+def load_mnist(batch_size: int = 64):
+    """
+    Carga el dataset MNIST con transformaciones apropiadas.
+
+    Args:
+        batch_size: Tamaño del batch para los dataloaders.
+
+    Returns:
+        Tuple con (train_loader, val_loader, test_loader, train_dataset, test_dataset)
+    """
+    from torch.utils.data import DataLoader
+    from torchvision import datasets, transforms
+
+    # Transformaciones para los datos
+    transform = transforms.Compose(
+        [transforms.ToTensor(), transforms.Normalize((0.1307,), (0.3081,))]
+    )
+
+    # Cargar datasets
+    train_dataset = datasets.MNIST(
+        root="./data", train=True, download=True, transform=transform
+    )
+
+    test_dataset = datasets.MNIST(
+        root="./data", train=False, download=True, transform=transform
+    )
+
+    # Dividir train en train y validation
+    train_size = int(0.8 * len(train_dataset))
+    val_size = len(train_dataset) - train_size
+    train_dataset, val_dataset = torch.utils.data.random_split(
+        train_dataset, [train_size, val_size]
+    )  # type: ignore  # Ignorar el warning de typing
+
+    # Crear dataloaders
+    train_loader = DataLoader(train_dataset, batch_size=batch_size, shuffle=True)
+    val_loader = DataLoader(val_dataset, batch_size=batch_size, shuffle=False)
+    test_loader = DataLoader(test_dataset, batch_size=batch_size, shuffle=False)
+
+    return train_loader, val_loader, test_loader, train_dataset, test_dataset
+
+
+def train_model(
+    model,
+    train_loader,
+    val_loader,
+    num_epochs: int,
+    learning_rate: float,
+    device: str,
+    log_dir: str,
+    checkpoint_dir: str,
+    early_stopping_patience: int = 5,
+):
+    """
+    Entrena el modelo con early stopping y logging.
+
+    Args:
+        model: Modelo a entrenar.
+        train_loader: DataLoader para entrenamiento.
+        val_loader: DataLoader para validación.
+        num_epochs: Número de épocas.
+        learning_rate: Tasa de aprendizaje.
+        device: Dispositivo para el entrenamiento ('cpu' o 'cuda').
+        log_dir: Directorio para logs de TensorBoard.
+        checkpoint_dir: Directorio para guardar checkpoints.
+        early_stopping_patience: Número de épocas sin mejora antes de detenerse.
+    """
+    import torch.nn as nn
+    import torch.optim as optim
+    from torch.utils.tensorboard import SummaryWriter
+
+    # Configurar TensorBoard
+    writer = SummaryWriter(log_dir)
+
+    # Mover modelo al dispositivo
+    model = model.to(device)
+
+    # Definir criterio y optimizador
+    criterion = nn.CrossEntropyLoss()
+    optimizer = optim.Adam(
+        model.parameters(),
+        lr=learning_rate,
+        weight_decay=model.weight_decay if hasattr(model, "weight_decay") else 0,
+    )
+
+    # Historial de entrenamiento
+    history = {
+        "train_loss": [],
+        "train_acc": [],
+        "val_loss": [],
+        "val_acc": [],
+        "best_val_acc": 0,
+        "best_epoch": 0,
+    }
+
+    # Early stopping
+    patience = early_stopping_patience
+    no_improvement_count = 0
+
+    for epoch in range(num_epochs):
+        # Entrenamiento
+        model.train()
+        train_loss = 0
+        correct = 0
+        total = 0
+
+        for batch_idx, (data, target) in enumerate(train_loader):
+            data, target = data.to(device), target.to(device)
+            data = data.view(data.size(0), -1)  # Aplanar imágenes
+
+            optimizer.zero_grad()
+            output = model(data)
+            loss = criterion(output, target)
+            loss.backward()
+            optimizer.step()
+
+            train_loss += loss.item()
+            _, predicted = output.max(1)
+            total += target.size(0)
+            correct += predicted.eq(target).sum().item()
+
+            if batch_idx % 100 == 0:
+                print(
+                    f"Epoch [{epoch+1}/{num_epochs}], "
+                    f"Step [{batch_idx+1}/{len(train_loader)}], "
+                    f"Loss: {loss.item():.4f}"
+                )  # Mostrar progreso del entrenamiento
+
+        # Validación
+        model.eval()
+        val_loss = 0
+        val_correct = 0
+        val_total = 0
+
+        with torch.no_grad():
+            for data, target in val_loader:
+                data, target = data.to(device), target.to(device)
+                data = data.view(data.size(0), -1)
+
+                output = model(data)
+                loss = criterion(output, target)
+
+                val_loss += loss.item()
+                _, predicted = output.max(1)
+                val_total += target.size(0)
+                val_correct += predicted.eq(target).sum().item()
+
+        # Calcular métricas
+        train_loss /= len(train_loader)
+        val_loss /= len(val_loader)
+        train_acc = correct / total
+        val_acc = val_correct / val_total
+
+        # Actualizar historial
+        history["train_loss"].append(train_loss)
+        history["train_acc"].append(train_acc)
+        history["val_loss"].append(val_loss)
+        history["val_acc"].append(val_acc)
+
+        # Logging
+        writer.add_scalar("Loss/train", train_loss, epoch)
+        writer.add_scalar("Loss/val", val_loss, epoch)
+        writer.add_scalar("Accuracy/train", train_acc, epoch)
+        writer.add_scalar("Accuracy/val", val_acc, epoch)
+
+        # Early stopping
+        if val_acc > history["best_val_acc"]:
+            history["best_val_acc"] = val_acc
+            history["best_epoch"] = epoch
+            torch.save(model.state_dict(), f"{checkpoint_dir}/model_best.pth")
+            no_improvement_count = 0
+        else:
+            no_improvement_count += 1
+
+        if no_improvement_count >= patience:
+            print(
+                f"Early stopping en epoch {epoch+1} "
+                f"(sin mejora en {patience} épocas)"
+            )
+            break
+
+        print(
+            f"Epoch [{epoch+1}/{num_epochs}] - "
+            f"Train Loss: {train_loss:.4f}, "
+            f"Train Acc: {train_acc:.4f}, "
+            f"Val Loss: {val_loss:.4f}, "
+            f"Val Acc: {val_acc:.4f}"
+        )
+
+    # Cerrar TensorBoard
+    writer.close()
+
+    return history
+
+
+def evaluate_model(model, data_loader, criterion, device: str):
+    """
+    Evalúa el modelo en un conjunto de datos.
+
+    Args:
+        model: Modelo a evaluar.
+        data_loader: DataLoader con los datos.
+        criterion: Criterio de pérdida.
+        device: Dispositivo para la evaluación ('cpu' o 'cuda').
+
+    Returns:
+        Tuple con (loss, accuracy)
+    """
+    model.eval()
+    test_loss = 0
+    correct = 0
+    total = 0
+
+    with torch.no_grad():
+        for data, target in data_loader:
+            data, target = data.to(device), target.to(device)
+            data = data.view(data.size(0), -1)
+
+            output = model(data)
+            loss = criterion(output, target)
+
+            test_loss += loss.item()
+            _, predicted = output.max(1)
+            total += target.size(0)
+            correct += predicted.eq(target).sum().item()
+
+    test_loss /= len(data_loader)
+    accuracy = correct / total
+
+    return test_loss, accuracy
