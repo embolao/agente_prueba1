@@ -6,14 +6,22 @@ pipeline {
     }
 
     stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+
         stage('Ejecutar Tests') {
             steps {
+                sh 'apt-get update && apt-get install -y gcc' // si lo necesitas
                 sh 'pip install -r requirements.txt'
-                sh 'pytest -v'
+                sh 'mkdir -p test-reports'
+                sh 'pytest -v --junitxml=test-reports/results.xml'
             }
             post {
                 always {
-                    junit '**/test-reports/*.xml'
+                    junit 'test-reports/*.xml'
                 }
             }
         }
