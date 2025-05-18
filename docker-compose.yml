@@ -1,52 +1,24 @@
-version: '3.8'
-
 services:
-  app:
-    build:
-      context: .
-      target: development
+  jenkins:
+    build: .
+    container_name: jenkins
+    user: root
+    ports:
+      - "8081:8080"
+      - "50001:50000"
     volumes:
-      - .:/app
-    working_dir: /app
+      - jenkins_home:/var/jenkins_home
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ./Jenkinsfile:/var/jenkins_home/Jenkinsfile
+      - ./jenkins-config.yaml:/usr/share/jenkins/ref/jenkins-config.yaml
     environment:
-      - PYTHONPATH=/app
-    command: bash -c "pip install . && bash"
+      - JAVA_OPTS=-Djenkins.install.runSetupWizard=false
+    networks:
+      - jenkins_net
 
-    tty: true
-    stdin_open: true
+networks:
+  jenkins_net:
+    driver: bridge
 
-  tests:
-    build:
-      context: .
-      target: development
-    volumes:
-      - .:/app
-    working_dir: /app
-    environment:
-      - PYTHONPATH=/app
-    command: >
-      bash -c "
-        pip install -e . &&
-        pytest -v
-      "
-    depends_on:
-      - app
-
-  lint:
-    build:
-      context: .
-      target: development
-    volumes:
-      - .:/app
-    working_dir: /app
-    environment:
-      - PYTHONPATH=/app
-    command: >
-      bash -c "
-        black --check . &&
-        flake8 . &&
-        mypy . &&
-        echo 'All checks passed!'
-      "
-    depends_on:
-      - app
+volumes:
+  jenkins_home:
