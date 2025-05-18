@@ -6,6 +6,16 @@ pipeline {
     }
 
     stages {
+        stage('Linting') {
+            steps {
+                sh '''
+                    pip install flake8
+                    echo "Ejecutando flake8 en src/..."
+                    flake8 src/ --exit-zero --statistics
+                '''
+            }
+        }
+
         stage('Ejecutar Tests') {
             steps {
                 sh '''
@@ -13,7 +23,6 @@ pipeline {
                     pip install -r requirements.txt
                     pip install pytest
 
-                    # Añadir src/ al PYTHONPATH
                     export PYTHONPATH=$PYTHONPATH:$(pwd)/src
 
                     mkdir -p test-reports
@@ -33,10 +42,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo '¡Los tests se completaron con éxito!'
+            echo '✅ Pipeline completado con éxito.'
         }
         failure {
-            echo 'Los tests fallaron. Revisando logs detallados...'
+            echo '❌ Algo falló. Revisa los logs.'
             sh 'cat test-reports/results.xml || echo "No se pudo leer el archivo de resultados."'
         }
     }
