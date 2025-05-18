@@ -5,6 +5,10 @@ pipeline {
         }
     }
 
+    environment {
+        COMPOSE_PROJECT_NAME = 'mi_app'
+    }
+
     stages {
         stage('Linting') {
             steps {
@@ -16,7 +20,7 @@ pipeline {
             }
         }
 
-        stage('Ejecutar Tests') {
+        stage('Testing') {
             steps {
                 sh '''
                     set -e
@@ -35,6 +39,31 @@ pipeline {
                 }
             }
         }
+
+        stage('Despliegue Automático') {
+            when {
+                branch 'master'
+            }
+            steps {
+                sh '''
+                    echo "Iniciando despliegue con docker-compose..."
+                    docker-compose down
+                    docker-compose up -d --build
+                    docker-compose ps
+
+                    echo "Esperando 10 segundos para que arranque el contenedor..."
+                    sleep 10
+
+                    echo "Verificando estado del servicio..."
+                    curl --fail http://localhost:8080/ || {
+                        echo "❌ La aplicación no respondió correctamente.";
+                        exit 1;
+                    }
+
+                    echo "✅ Verificación de salud completada."
+                '''
+            }
+        }
     }
 
     post {
@@ -42,11 +71,10 @@ pipeline {
             cleanWs()
         }
         success {
-            echo '✅ Pipeline completado con éxito.'
+            echo '✅ Pipeline completo: Linting, Tests, Despliegue y Verificación exitosos.'
         }
         failure {
-            echo '❌ Algo falló. Revisa los logs.'
-            sh 'cat test-reports/results.xml || echo "No se pudo leer el archivo de resultados."'
+            echo '❌ Fallo en alguna etapa. Revisa los errores.'
         }
     }
 }
