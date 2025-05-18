@@ -2,44 +2,28 @@ pipeline {
     agent {
         docker {
             image 'python:3.12-slim'
-            args '--user root'
         }
     }
 
     stages {
-        stage('Preparar Entorno') {
-            steps {
-                script {
-                    echo 'Verificando estructura del proyecto...'
-                    sh 'ls -la'
-                    echo 'Verificando directorio de tests...'
-                    sh 'ls -la tests/'
-                    
-                    echo 'Instalando dependencias...'
-                    sh '''
-                        pip install -r requirements.txt
-                        pip install pytest pytest-junitxml
-                    '''
-                }
-            }
-        }
-
         stage('Ejecutar Tests') {
             steps {
-                script {
-                    echo 'Creando directorio para reportes...'
-                    sh 'mkdir -p test-reports'
+                sh '''
+                    pip install -r requirements.txt
+                    pip install pytest pytest-junitxml
+                    # Asegurar que se pueda importar el módulo
+                    export PYTHONPATH=$PYTHONPATH:$(pwd)
                     
-                    echo 'Ejecutando tests...'
-                    sh '''
-                        pytest --junitxml=test-reports/results.xml -v
-                    '''
-                }
+                    # Verifica presencia del módulo
+                    ls -la
+                    ls -la agente_prueba1 || echo "El módulo no está presente"
+
+                    mkdir -p test-reports
+                    pytest --junitxml=test-reports/results.xml -v
+                '''
             }
             post {
                 always {
-                    echo 'Verificando reporte de tests...'
-                    sh 'ls -la test-reports/'
                     junit 'test-reports/results.xml'
                 }
             }
@@ -55,8 +39,9 @@ pipeline {
         }
         failure {
             echo 'Los tests fallaron. Revisando logs detallados...'
-            sh 'cat test-reports/results.xml'
+            sh 'cat test-reports/results.xml || echo "No se pudo leer el archivo de resultados."'
         }
     }
 }
+
  
