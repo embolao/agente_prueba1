@@ -9,14 +9,12 @@ pipeline {
         stage('Ejecutar Tests') {
             steps {
                 sh '''
+                    set -e
                     pip install -r requirements.txt
-                    pip install pytest pytest-junitxml
-                    # Asegurar que se pueda importar el módulo
-                    export PYTHONPATH=$PYTHONPATH:$(pwd)
-                    
-                    # Verifica presencia del módulo
-                    ls -la
-                    ls -la agente_prueba1 || echo "El módulo no está presente"
+                    pip install pytest
+
+                    # Añadir src/ al PYTHONPATH
+                    export PYTHONPATH=$PYTHONPATH:$(pwd)/src
 
                     mkdir -p test-reports
                     pytest --junitxml=test-reports/results.xml -v
@@ -43,5 +41,3 @@ pipeline {
         }
     }
 }
-
- 
