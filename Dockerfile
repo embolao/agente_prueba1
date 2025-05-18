@@ -1,51 +1,23 @@
-# syntax=docker/dockerfile:1.4
+FROM jenkins/jenkins:lts
 
-# Use the official Python image as a parent image
-FROM pytorch/pytorch:2.7.0-cuda12.1-cudnn8-runtime as base
+USER root
 
-# Set environment variables
-ENV PYTHONDONTWRITEBYTECODE=1 \
-    PYTHONUNBUFFERED=1
-
-# Install system dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends \
-    build-essential \
-    curl \
-    git \
+# Instalar Docker CLI y dependencias
+RUN apt-get update && apt-get install -y \
+    docker.io \
+    && apt-get clean \
     && rm -rf /var/lib/apt/lists/*
 
-# Set working directory
-WORKDIR /app
+# Permitir que Jenkins use docker sin sudo (opcional)
+RUN usermod -aG docker jenkins
 
-# Install Python dependencies directly with pip
-COPY requirements.txt .
-RUN pip install --no-cache-dir -r requirements.txt
+# Instalar plugins necesarios para pipeline y Docker
+RUN jenkins-plugin-cli --plugins \
+    docker-workflow \
+    workflow-aggregator \
+    git \
+    junit \
+    configuration-as-code
 
-# Create a non-root user
-RUN adduser --disabled-password -u 1000 appuser && \
-    chown -R appuser:appuser /app
+USER jenkins
 
-# Copy the rest of the application
-COPY --chown=appuser:appuser . .
-
-# Switch to non-root user
-USER appuser
-
-# Command to run the application
-CMD ["bash"]
-
-# Development stage
-FROM base as development
-
-# Install development dependencies
-RUN pip install pytest black flake8 mypy
-
-# Production stage
-FROM base as production
-
-# Install the package in development mode
-RUN pip install .
-
-
-# Command to run the application
-CMD ["python", "-m", "agente_prueba1"]
